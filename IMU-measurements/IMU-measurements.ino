@@ -69,22 +69,24 @@ void loop()
     if (IMU.accelerationAvailable())
     {
         IMU.readAcceleration(a_x, a_y, a_z);
-
-        /// Print the accelerometer measurements to the Serial Monitor
-        Serial.print(a_x);
-        Serial.print("\t");
-        Serial.print(a_y);
-        Serial.print("\t");
-        Serial.print(a_z);
-        Serial.print(" g\t\t");
+//
+//        /// Print the accelerometer measurements to the Serial Monitor
+//        Serial.print(a_x);
+//        Serial.print("\t");
+//        Serial.print(a_y);
+//        Serial.print("\t");
+//        Serial.print(a_z);
+//        Serial.print(" g\t\t");
     }
 
     // Read from the gyroscope
     if (IMU.gyroscopeAvailable())
     {
         IMU.readGyroscope(omega_x, omega_y, omega_z);
+        omega_x = omega_x - 0.105;
+        omega_y = omega_y + 0.256;
 
-        // Print the gyroscope measurements to the Serial Monitor
+        // Print the gyroscopef measurements to the Serial Monitor
         Serial.print(omega_x);
         Serial.print("\t");
         Serial.print(omega_y);
