@@ -21,7 +21,8 @@ int I3 = 4;
 int I4 = 5;
 
 // Motor PWM command variable [0-255]
-byte u = 0;
+byte L = 0;
+byte R = 0;
 
 // Left wheel encoder digital pins
 const byte SIGNAL_AL = 12;
@@ -42,6 +43,12 @@ volatile long encoder_ticksR = 0;
 // Variable to store estimated angular rate of left wheel [rad/s]
 double omega_L = 0.0;
 double omega_R = 0.0;
+double v_L = 0.0;
+double v_R = 0.0;
+
+double v_t = 0.0;
+double turnRate = 0.0;
+double track = 0.2775;
 
 // Sampling interval for measurements in milliseconds
 const int T = 1000;
@@ -120,20 +127,38 @@ void loop()
         omega_L = 2.0 * PI * ((double)encoder_ticksL / (double)TPR) * 1000.0 / (double)(t_now - t_last);
         omega_R = 2.0 * PI * ((double)encoder_ticksR / (double)TPR) * 1000.0 / (double)(t_now - t_last);
 
+        v_L = omega_L * RHO;
+        v_R = omega_R * RHO;
+
+        v_t = (v_L + v_R)/2;
+        turnRate = (1/track)*(v_R - v_L);
+
         // Print some stuff to the serial monitor
-        Serial.print("Encoder ticks: ");
-        Serial.print(encoder_ticksL);
-        Serial.print("\t");
-        Serial.print("Estimated left wheel speed: ");
-        Serial.print(omega_L);
-        Serial.print(" rad/s");
-        Serial.print("\t");
-        Serial.print("Encoder ticks: ");
-        Serial.print(encoder_ticksR);
-        Serial.print("\t");
-        Serial.print("Estimated right wheel speed: ");
-        Serial.print(omega_R);
-        Serial.print(" rad/s");
+        //Serial.print("Encoder ticks: ");
+        //Serial.print(encoder_ticksL);
+        //Serial.print("\t");
+        //Serial.print("Estimated left wheel speed: ");
+        //Serial.print(omega_L);
+        //Serial.print(" rad/s");
+        //Serial.print("\t");
+        // Serial.print("v_L: ");
+        // Serial.print(v_L);
+        // Serial.print("\t");
+        // Serial.print("Estimated right wheel speed: ");
+        // Serial.print(v_R);
+        // Serial.print(" rad/s");
+        // Serial.print("\t");
+
+        Serial.print("Estimated translational speed: ");
+        Serial.print(v_t);
+        Serial.print(" m/s");
+        Serial.print("\t");  
+
+        Serial.print("Estimated turning rate: ");
+        Serial.print(turnRate);
+        Serial.print(" m/s");
+        Serial.print("\n");         
+        
         Serial.print("\n");
 
         // Record the current time [ms]
@@ -145,17 +170,16 @@ void loop()
     }
 
     // Set the wheel motor PWM command [0-255]
-    u = 128;
+    L = 200;
+    R = 150; 
 
-     analogWrite(EA, u);    // Write left motors command
-    analogWrite(EB, u);
+    analogWrite(EA, R);    // Write left motors command
+    analogWrite(EB, L);
 
     // Write to the output pins
     digitalWrite(I1, HIGH); // Drive forward (left wheels)
     digitalWrite(I2, LOW);
 
     digitalWrite(I3, LOW);
-    digitalWrite(I4, HIGH);
-
-   
+    digitalWrite(I4, HIGH);   
 }
