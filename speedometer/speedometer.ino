@@ -9,6 +9,14 @@
  *
  */
 
+#include <Arduino_LSM6DS3.h>
+
+// Variables to store angular rates from the gyro [degrees/s]
+float omega_x, omega_y, omega_z;
+
+// Variables to store sample rates from sensor [Hz]
+float g_f;
+
 // Motor driver PWM pin
 int EA = 9;
 int EB = 10; 
@@ -89,7 +97,21 @@ void decodeEncoderTicksR()
 void setup()
 {
     // Open the serial port at 9600 bps
-    Serial.begin(9600);
+    //Serial.begin(9600);
+    Serial.begin(115200);
+
+     if (!IMU.begin())
+    {
+        // Print an error message if the IMU is not ready
+        Serial.print("Failed to initialize IMU :(");
+        Serial.print("\n");
+        while (1)
+        {
+            delay(10);
+        }
+    }
+
+    g_f = IMU.gyroscopeSampleRate();
 
     // Set the pin modes for the motor driver
     pinMode(EA, OUTPUT);
@@ -149,17 +171,17 @@ void loop()
         // Serial.print(" rad/s");
         // Serial.print("\t");
 
-        Serial.print("Estimated translational speed: ");
-        Serial.print(v_t);
-        Serial.print(" m/s");
-        Serial.print("\t");  
+        //Serial.print("Estimated translational speed: ");
+        //Serial.print(v_t);
+        //Serial.print(" m/s");
+        //Serial.print("\t");  
 
-        Serial.print("Estimated turning rate: ");
-        Serial.print(turnRate);
-        Serial.print(" m/s");
-        Serial.print("\n");         
+        //Serial.print("Estimated turning rate: ");
+        //Serial.print(turnRate);
+        //Serial.print(" m/s");
+        //Serial.print("\n");         
         
-        Serial.print("\n");
+        //Serial.print("\n");
 
         // Record the current time [ms]
         t_last = t_now;
@@ -167,6 +189,23 @@ void loop()
         // Reset the encoder ticks counter
         encoder_ticksL = 0;
         encoder_ticksR = 0;
+    }
+
+    // Read from the gyroscope
+    if (IMU.gyroscopeAvailable())
+    {
+        IMU.readGyroscope(omega_x, omega_y, omega_z);
+
+        omega_x = omega_x - 0.03;
+        omega_y = omega_y + 0.25;
+
+        // Print the gyroscope measurements to the Serial Monitor
+        Serial.print(omega_x);
+        Serial.print("\t");
+        Serial.print(omega_y);
+        Serial.print("\t");
+        Serial.print(omega_z);
+        Serial.print(" deg/s\n");
     }
 
     // Set the wheel motor PWM command [0-255]
