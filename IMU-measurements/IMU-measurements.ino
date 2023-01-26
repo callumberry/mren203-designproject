@@ -86,14 +86,7 @@ void loop()
         omega_x = omega_x - 0.105;
         omega_y = omega_y + 0.256;
 
-<<<<<<< HEAD
         // Print the gyroscopef measurements to the Serial Monitor
-=======
-        omega_x = omega_x - 0.105;
-        omega_y = omega_y + 0.256;
-
-        // Print the gyroscope measurements to the Serial Monitor
->>>>>>> 77bbce485f65591c6673a056ee88a11ce1050355
         Serial.print(omega_x);
         Serial.print("\t");
         Serial.print(omega_y);
