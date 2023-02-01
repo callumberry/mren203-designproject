@@ -62,7 +62,7 @@ double track = 0.2775;
 double kr = 1.0, kl = 1.0; 
 double ur = 0.0, ul = 0.0;
 double vdr = 0.0, vdl = 0.0;
-double vDesired = 1.0;
+double vDesired = 200;
 
 // Sampling interval for measurements in milliseconds
 const int T = 100;
@@ -161,25 +161,16 @@ void loop(){
         // Reset the encoder ticks counter
         encoder_ticksL = 0;
         encoder_ticksR = 0;
-    }
 
-    if(ur > 0 && ul > 0){
         RFor(ur);
         LFor(ul);
-    }
-    else if(ur < 0 && ul < 0){
-        RBack(ur);
-        LBack(ul);
-    }
-    if(ur > 0 && ul < 0){
-        RFor(ur);
-        LBack(ul);
-    }
-    if(ur < 0 && ul > 0){
-        RBack(ur);
-        LFor(ul);
-    }
-   
+
+        
+        Serial.print(ul);
+        Serial.print("\n");
+        
+
+    }  
 }
 
 double compute_vehicle_speed(double v_L, double v_R){
@@ -203,7 +194,7 @@ void RFor(int speed){
 void RBack(int speed){
     digitalWrite(I1, LOW);  
     digitalWrite(I2, HIGH); 
-    analogWrite(EA, -speed);
+    analogWrite(EA, speed);
 }
 
 //control for left wheels
@@ -215,5 +206,5 @@ void LFor(int speed){
 void LBack(int speed){
     digitalWrite(I3, LOW);  
     digitalWrite(I4, HIGH); 
-    analogWrite(EA, -speed);
+    analogWrite(EA, speed);
 }
