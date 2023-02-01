@@ -59,9 +59,9 @@ double turnRate = 0.0;
 double track = 0.2775;
 
 
-double kv, kw; 
-double megaController = 0.0, velocityController = 0.0;
-double omegaDesired = 0.0, velocityDesired = 0.0;
+double kr = 1.0, kl = 1.0; 
+double ur = 0.0, ul = 0.0;
+double vdr = 0.0, vdl = 0.0;
 
 // Sampling interval for measurements in milliseconds
 const int T = 100;
@@ -71,47 +71,38 @@ long t_now = 0;
 long t_last = 0;
 
 // This function is called when SIGNAL_A goes HIGH
-void decodeEncoderTicksL()
-{
-    if (digitalRead(SIGNAL_BL) == LOW)
-    {
+void decodeEncoderTicksL(){
+    if (digitalRead(SIGNAL_BL) == LOW){
         // SIGNAL_A leads SIGNAL_B, so count one way
         encoder_ticksL--;
     }
-    else
-    {
+    else{
         // SIGNAL_B leads SIGNAL_A, so count the other way
         encoder_ticksL++;
     }
 }
 
-void decodeEncoderTicksR()
-{
-    if (digitalRead(SIGNAL_BR) == LOW)
-    {
+void decodeEncoderTicksR(){
+    if (digitalRead(SIGNAL_BR) == LOW){
         // SIGNAL_A leads SIGNAL_B, so count one way
         encoder_ticksR++;
     }
-    else
-    {
+    else{
         // SIGNAL_B leads SIGNAL_A, so count the other way
         encoder_ticksR--;
     }
 }
 
-void setup()
-{
+void setup(){
     // Open the serial port at 9600 bps
     Serial.begin(9600);
     //Serial.begin(115200);
 
-     if (!IMU.begin())
-    {
+     if (!IMU.begin()){
         // Print an error message if the IMU is not ready
         Serial.print("Failed to initialize IMU :(");
         Serial.print("\n");
-        while (1)
-        {
+        while (1){
             delay(10);
         }
     }
@@ -143,53 +134,25 @@ void setup()
     Serial.print("\n");
 }
 
-void loop()
-{
+void loop(){
     // Get the elapsed time [ms]
     t_now = millis();
 
-    if (t_now - t_last >= T)
-    {
+    if (t_now - t_last >= T){
         // Estimate the rotational speed [rad/s]
         omega_L = 2.0 * PI * ((double)encoder_ticksL / (double)TPR) * 1000.0 / (double)(t_now - t_last);
         omega_R = 2.0 * PI * ((double)encoder_ticksR / (double)TPR) * 1000.0 / (double)(t_now - t_last);
-
         v_L = omega_L * RHO;
         v_R = omega_R * RHO;
 
-        omegaController = kw * (omegaDesired - compute_vehicle_rate(v_L, v_R));
-        velocityController = kv * (velocityDesired - compute_vehicle_speed(v_L, v_R));
+        turnRate = compute_vehicle_rate(v_L, v_R);
 
-       
-   
+        vdr = 0.5 * (track * turnRate) - compute_vehicle_speed(v_L, v_R); 
+        vdl = compute_vehicle_speed(v_L, v_R) - 0.5 * (track * turnRate); 
 
-        // Print some stuff to the serial monitor
-        //Serial.print("Encoder ticks: ");
-        //Serial.print(encoder_ticksL);
-        //Serial.print("\t");
-        //Serial.print("Estimated left wheel speed: ");
-        //Serial.print(omega_L);
-        //Serial.print(" rad/s");
-        //Serial.print("\t");
-        // Serial.print("v_L: ");
-        // Serial.print(v_L);
-        // Serial.print("\t");
-        // Serial.print("Estimated right wheel speed: ");
-        // Serial.print(v_R);
-        // Serial.print(" rad/s");
-        // Serial.print("\t");
-
-        Serial.print("Estimated translational speed: ");
-        Serial.print(v_t);
-        Serial.print(" m/s");
-        Serial.print("\t");  
-
-        Serial.print("Estimated turning rate: ");
-        Serial.print(turnRate);
-        Serial.print(" m/s");
-        Serial.print("\n");         
-        
-        //Serial.print("\n");
+        ur = kr * (vdr - v_R);
+        ul = kl * (vdl - v_L);
+    
 
         // Record the current time [ms]
         t_last = t_now;
@@ -199,29 +162,8 @@ void loop()
         encoder_ticksR = 0;
     }
 
-    // Read from the gyroscope
-    if (IMU.gyroscopeAvailable())
-    {
-        IMU.readGyroscope(omega_x, omega_y, omega_z);
-
-        omega_x = omega_x - 0.03;
-        omega_y = omega_y + 0.25;
-
-        // Print the gyroscope measurements to the Serial Monitor
-       // Serial.print(omega_x);
-       // Serial.print("\t");
-       // Serial.print(omega_y);
-       // Serial.print("\t");
-       // Serial.print(omega_z);
-       // Serial.print(" deg/s\n");
-    }
-
-    // Set the wheel motor PWM command [0-255]
-    L = 200;
-    R = 200; 
-
-    analogWrite(EA, R);    // Write left motors command
-    analogWrite(EB, L);
+    analogWrite(EA, ur);    // Write left motors command
+    analogWrite(EB, ul);
 
     // Write to the output pins
     digitalWrite(I1, HIGH); // Drive forward (left wheels)
