@@ -62,6 +62,7 @@ double track = 0.2775;
 double kr = 1.0, kl = 1.0; 
 double ur = 0.0, ul = 0.0;
 double vdr = 0.0, vdl = 0.0;
+double vDesired = 1.0;
 
 // Sampling interval for measurements in milliseconds
 const int T = 100;
@@ -147,8 +148,8 @@ void loop(){
 
         turnRate = compute_vehicle_rate(v_L, v_R);
 
-        vdr = 0.5 * (track * turnRate) - compute_vehicle_speed(v_L, v_R); 
-        vdl = compute_vehicle_speed(v_L, v_R) - 0.5 * (track * turnRate); 
+        vdr = 0.5 * (track * turnRate) - vDesired; 
+        vdl = vDesired - 0.5 * (track * turnRate); 
 
         ur = kr * (vdr - v_R);
         ul = kl * (vdl - v_L);
@@ -162,15 +163,23 @@ void loop(){
         encoder_ticksR = 0;
     }
 
-    analogWrite(EA, ur);    // Write left motors command
-    analogWrite(EB, ul);
-
-    // Write to the output pins
-    digitalWrite(I1, HIGH); // Drive forward (left wheels)
-    digitalWrite(I2, LOW);
-
-    digitalWrite(I3, LOW);
-    digitalWrite(I4, HIGH);   
+    if(ur > 0 && ul > 0){
+        RFor(ur);
+        LFor(ul);
+    }
+    else if(ur < 0 && ul < 0){
+        RBack(ur);
+        LBack(ul);
+    }
+    if(ur > 0 && ul < 0){
+        RFor(ur);
+        LBack(ul);
+    }
+    if(ur < 0 && ul > 0){
+        RBack(ur);
+        LFor(ul);
+    }
+   
 }
 
 double compute_vehicle_speed(double v_L, double v_R){
@@ -183,4 +192,28 @@ double compute_vehicle_rate(double v_L, double v_R){
     double omega;
     omega = 1.0 / track * (v_R - v_L);
     return omega;
+}
+
+//right wheel
+void RFor(int speed){
+    digitalWrite(I1, HIGH);  
+    digitalWrite(I2, LOW); 
+    analogWrite(EA, speed);
+}
+void RBack(int speed){
+    digitalWrite(I1, LOW);  
+    digitalWrite(I2, HIGH); 
+    analogWrite(EA, -speed);
+}
+
+//control for left wheels
+void LFor(int speed){
+    digitalWrite(I3, HIGH);  
+    digitalWrite(I4, LOW); 
+    analogWrite(EA, speed);
+}
+void LBack(int speed){
+    digitalWrite(I3, LOW);  
+    digitalWrite(I4, HIGH); 
+    analogWrite(EA, -speed);
 }
