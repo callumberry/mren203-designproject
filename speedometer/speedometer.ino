@@ -58,8 +58,13 @@ double v_t = 0.0;
 double turnRate = 0.0;
 double track = 0.2775;
 
+
+double kv, kw; 
+double megaController = 0.0, velocityController = 0.0;
+double omegaDesired = 0.0, velocityDesired = 0.0;
+
 // Sampling interval for measurements in milliseconds
-const int T = 1000;
+const int T = 100;
 
 // Counters for milliseconds during interval
 long t_now = 0;
@@ -97,8 +102,8 @@ void decodeEncoderTicksR()
 void setup()
 {
     // Open the serial port at 9600 bps
-    //Serial.begin(9600);
-    Serial.begin(115200);
+    Serial.begin(9600);
+    //Serial.begin(115200);
 
      if (!IMU.begin())
     {
@@ -152,8 +157,11 @@ void loop()
         v_L = omega_L * RHO;
         v_R = omega_R * RHO;
 
-        v_t = (v_L + v_R)/2;
-        turnRate = (1/track)*(v_R - v_L);
+        omegaController = kw * (omegaDesired - compute_vehicle_rate(v_L, v_R));
+        velocityController = kv * (velocityDesired - compute_vehicle_speed(v_L, v_R));
+
+       
+   
 
         // Print some stuff to the serial monitor
         //Serial.print("Encoder ticks: ");
@@ -171,15 +179,15 @@ void loop()
         // Serial.print(" rad/s");
         // Serial.print("\t");
 
-        //Serial.print("Estimated translational speed: ");
-        //Serial.print(v_t);
-        //Serial.print(" m/s");
-        //Serial.print("\t");  
+        Serial.print("Estimated translational speed: ");
+        Serial.print(v_t);
+        Serial.print(" m/s");
+        Serial.print("\t");  
 
-        //Serial.print("Estimated turning rate: ");
-        //Serial.print(turnRate);
-        //Serial.print(" m/s");
-        //Serial.print("\n");         
+        Serial.print("Estimated turning rate: ");
+        Serial.print(turnRate);
+        Serial.print(" m/s");
+        Serial.print("\n");         
         
         //Serial.print("\n");
 
@@ -200,17 +208,17 @@ void loop()
         omega_y = omega_y + 0.25;
 
         // Print the gyroscope measurements to the Serial Monitor
-        Serial.print(omega_x);
-        Serial.print("\t");
-        Serial.print(omega_y);
-        Serial.print("\t");
-        Serial.print(omega_z);
-        Serial.print(" deg/s\n");
+       // Serial.print(omega_x);
+       // Serial.print("\t");
+       // Serial.print(omega_y);
+       // Serial.print("\t");
+       // Serial.print(omega_z);
+       // Serial.print(" deg/s\n");
     }
 
     // Set the wheel motor PWM command [0-255]
     L = 200;
-    R = 150; 
+    R = 200; 
 
     analogWrite(EA, R);    // Write left motors command
     analogWrite(EB, L);
@@ -221,4 +229,16 @@ void loop()
 
     digitalWrite(I3, LOW);
     digitalWrite(I4, HIGH);   
+}
+
+double compute_vehicle_speed(double v_L, double v_R){
+    double v;
+    v = 0.5 * (v_L + v_R);
+    return v;
+}
+
+double compute_vehicle_rate(double v_L, double v_R){
+    double omega;
+    omega = 1.0 / track * (v_R - v_L);
+    return omega;
 }
