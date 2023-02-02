@@ -1,42 +1,16 @@
-/**
- * @file motor-angular-rate.ino
- * @author Joshua Marshall (joshua.marshall@queensu.ca)
- * @brief Arduino program to estimate motor speed from encoder.
- * @version 2.0
- * @date 2022-12-09
- *
- * @copyright Copyright (c) 2021-2022
- *
- */
-
 #include <Arduino_LSM6DS3.h>
 
-// Variables to store angular rates from the gyro [degrees/s]
-float omega_x, omega_y, omega_z;
-
-// Variables to store sample rates from sensor [Hz]
-float g_f;
-
 // Motor driver PWM pin
-int EA = 9;
-int EB = 10; 
+int EA = 9, EB = 10; 
 
 // Motor driver direction pin
-int I1 = 2;
-int I2 = 3;
-
-int I3 = 4;
-int I4 = 5;
+int I1 = 2, I2 = 3, I3 = 4, I4 = 5;
 
 // Motor PWM command variable [0-255]
-byte L = 0;
-byte R = 0;
+byte ul = 0, ur = 0;
 
 // Left wheel encoder digital pins
-const byte SIGNAL_AL = 12;
-const byte SIGNAL_BL = 13;
-const byte SIGNAL_AR = 6;
-const byte SIGNAL_BR = 7;
+const byte SIGNAL_AL = 12, SIGNAL_BL = 13, SIGNAL_AR = 6, SIGNAL_BR = 7;
 
 // Encoder ticks per (motor) revolution (TPR)
 const int TPR = 3020;
@@ -45,19 +19,14 @@ const int TPR = 3020;
 const double RHO = 0.0625;
 
 // Counter to keep track of encoder ticks [integer]
-volatile long encoder_ticksL = 0;
-volatile long encoder_ticksR = 0;
+volatile long encoder_ticksL = 0, encoder_ticksR = 0;
 
 // Variable to store estimated angular rate of left wheel [rad/s]
-double omega_L = 0.0;
-double omega_R = 0.0;
-double v_L = 0.0;
-double v_R = 0.0;
+double omega_L = 0.0, omega_R = 0.0;
+double v_L = 0.0, v_R = 0.0;
 
-double v_t = 0.0;
 double turnRate = 0.0;
 double track = 0.2775;
-
 
 double kr = 1.0, kl = 1.0; 
 double ur = 0.0, ul = 0.0;
@@ -82,7 +51,6 @@ void decodeEncoderTicksL(){
         encoder_ticksL++;
     }
 }
-
 void decodeEncoderTicksR(){
     if (digitalRead(SIGNAL_BR) == LOW){
         // SIGNAL_A leads SIGNAL_B, so count one way
@@ -97,18 +65,6 @@ void decodeEncoderTicksR(){
 void setup(){
     // Open the serial port at 9600 bps
     Serial.begin(9600);
-    //Serial.begin(115200);
-
-     if (!IMU.begin()){
-        // Print an error message if the IMU is not ready
-        Serial.print("Failed to initialize IMU :(");
-        Serial.print("\n");
-        while (1){
-            delay(10);
-        }
-    }
-
-    g_f = IMU.gyroscopeSampleRate();
 
     // Set the pin modes for the motor driver
     pinMode(EA, OUTPUT);
@@ -153,7 +109,6 @@ void loop(){
 
         ur = kr * (vdr - v_R);
         ul = kl * (vdl - v_L);
-    
 
         // Record the current time [ms]
         t_last = t_now;
@@ -165,11 +120,12 @@ void loop(){
         RFor(ur);
         LFor(ul);
 
-        
+        Serial.print("ul: ");
         Serial.print(ul);
         Serial.print("\n");
-        
-
+        Serial.print("ur: ");
+        Serial.print(ur);
+        Serial.print("\n");
     }  
 }
 
@@ -196,7 +152,6 @@ void RBack(int speed){
     digitalWrite(I2, HIGH); 
     analogWrite(EA, speed);
 }
-
 //control for left wheels
 void LFor(int speed){
     digitalWrite(I3, HIGH);  
