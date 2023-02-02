@@ -25,12 +25,13 @@ volatile long encoder_ticksL = 0, encoder_ticksR = 0;
 double omega_L = 0.0, omega_R = 0.0;
 double v_L = 0.0, v_R = 0.0;
 
-double turnRate = 1;
+double turnRate = 0;
 double track = 0.2775;
 
-double kp = 100; 
+double kp = 100, ki = 100; 
 double vdr = 0.0, vdl = 0.0;
 double vDesired = 1.5;
+double integralL = 0.0, integralR = 0.0;
 
 // Sampling interval for measurements in milliseconds
 const int T = 100;
@@ -104,8 +105,11 @@ void loop(){
         vdr = 0.5 * (track * turnRate) + vDesired; 
         vdl = vDesired - 0.5 * (track * turnRate); 
 
-        ur = kp * (vdr - v_R);
-        ul = kp * (vdl - v_L);
+        integralL = integralL + (vdr - v_R);
+        integralR = integralL + (vdl - v_L);
+
+        ur = kp * (vdr - v_R) + ki * integralL;
+        ul = kp * (vdl - v_L) + ki * integralR;
 
         // Record the current time [ms]
         t_last = t_now;
