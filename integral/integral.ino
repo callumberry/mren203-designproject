@@ -7,7 +7,7 @@ int EA = 9, EB = 10;
 int I1 = 2, I2 = 3, I3 = 4, I4 = 5;
 
 // Motor PWM command variable [0-255]
-byte ul = 0, ur = 0;
+double ul = 0, ur = 0;
 
 // Left wheel encoder digital pins
 const byte SIGNAL_AL = 12, SIGNAL_BL = 13, SIGNAL_AR = 6, SIGNAL_BR = 7;
@@ -28,9 +28,9 @@ double v_L = 0.0, v_R = 0.0;
 double turnRate = 0;
 double track = 0.2775;
 
-double kp = 100, ki = 100; 
+double kp = 150, ki = 0.5 * kp; 
 double vdr = 0.0, vdl = 0.0;
-double vDesired = 1.5;
+double vDesired = 0.25;
 double integralL = 0.0, integralR = 0.0;
 
 // Sampling interval for measurements in milliseconds
@@ -108,8 +108,21 @@ void loop(){
         integralL = integralL + (vdr - v_R);
         integralR = integralL + (vdl - v_L);
 
-        ur = kp * (vdr - v_R) + ki * integralL;
-        ul = kp * (vdl - v_L) + ki * integralR;
+        if(abs(ur) > 255){
+            
+        }
+        else{
+            ur = kp * (vdr - v_R) + ki * integralL;
+      
+        }
+        if(abs(ul) > 255){
+
+        }
+        else{
+            ul = kp * (vdl - v_L) + ki * integralR;
+        }
+
+        
 
         // Record the current time [ms]
         t_last = t_now;
@@ -118,9 +131,19 @@ void loop(){
         encoder_ticksL = 0;
         encoder_ticksR = 0;
 
-        if(ur > 0 && ul > 0){
+        
+
+        if(ur > 0){
             RFor(ur);
-            LFor(ul);
+        }
+        if(ur < 0){
+            RBack(-ur);
+        }
+        if(ul > 0){
+            LFor(ur);
+        }
+        if(ul < 0){
+            LBack(-ul);
         }
        
 

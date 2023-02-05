@@ -1,10 +1,8 @@
 #include <Arduino_LSM6DS3.h>
 
-// Motor driver PWM pin
-int EA = 9, EB = 10; 
 
-// Motor driver direction pin
-int I1 = 2, I2 = 3, I3 = 4, I4 = 5;
+int EA = 9, EB = 10; // Motor driver PWM pin
+int I1 = 2, I2 = 3, I3 = 4, I4 = 5; // Motor driver direction pin
 
 // Motor PWM command variable [0-255]
 byte ul = 0, ur = 0;
@@ -145,24 +143,23 @@ double compute_vehicle_rate(double v_L, double v_R){
     return omega;
 }
 
-//right wheel
-void RFor(int speed){
+
+void RFor(int speed){ //Right Wheels Forward
     digitalWrite(I1, HIGH);  
     digitalWrite(I2, LOW); 
     analogWrite(EA, speed);
 }
-void RBack(int speed){
+void RBack(int speed){ //Right Wheels Backwards
     digitalWrite(I1, LOW);  
     digitalWrite(I2, HIGH); 
     analogWrite(EA, speed);
 }
-//control for left wheels
-void LFor(int speed){
+void LFor(int speed){ //Left Wheels Forwards
     digitalWrite(I3, LOW);  
     digitalWrite(I4, HIGH); 
     analogWrite(EB, speed);
 }
-void LBack(int speed){
+void LBack(int speed){ //Left Wheels Backwards
     digitalWrite(I3, HIGH);  
     digitalWrite(I4, LOW); 
     analogWrite(EB, speed);
