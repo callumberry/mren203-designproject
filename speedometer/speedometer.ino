@@ -96,12 +96,15 @@ void loop(){
         // Estimate the rotational speed [rad/s]
         omega_L = 2.0 * PI * ((double)encoder_ticksL / (double)TPR) * 1000.0 / (double)(t_now - t_last);
         omega_R = 2.0 * PI * ((double)encoder_ticksR / (double)TPR) * 1000.0 / (double)(t_now - t_last);
+        // Calculates the current velocity of the left and right wheels [m/s]
         v_L = omega_L * RHO;
         v_R = omega_R * RHO;
 
+        // Calculates the desired velocity of the left and right wheels to reach the desired speed of the robot
         vdr = 0.5 * (track * turnRate) + vDesired; 
         vdl = vDesired - 0.5 * (track * turnRate); 
 
+        // Calculates the PWM signal that is sent to the robot to reach the desired speed
         ur = kp * (vdr - v_R);
         ul = kp * (vdl - v_L);
 
