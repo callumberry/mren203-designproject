@@ -1,0 +1,10 @@
+SGP30
+range 400-60000ppm and 0-60000ppb tvoc
+sample rate
+accuracy 15%
+when running doesnt go below 400
+
+SCD30
+range 400-1000ppm
+sample rate
+accuracy  +-30ppm
