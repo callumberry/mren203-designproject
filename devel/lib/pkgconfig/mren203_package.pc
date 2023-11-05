@@ -1,0 +1,8 @@
+prefix=/home/gonk/mren203_ws/devel
+
+Name: mren203_package
+Description: Description of mren203_package
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
